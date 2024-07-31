@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Video</title>
+    <script>
+        async function uploadVideo() {
+            const fileInput = document.querySelector('input[type="file"]');
+            const file = fileInput.files[0];
+
+            // Get signed URL
+            const urlResponse = await fetch('/get-upload-url/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+            const urlData = await urlResponse.json();
+            const signedUrl = urlData.url;
+
+            // Upload to GCS
+            await fetch(signedUrl, {
+                method: 'PUT',
+                body: file,
+                headers: {
+                    'Content-Type': file.type
+                }
+            });
+
+            // Notify server of successful upload
+            const successResponse = await fetch('/upload-success/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `blob_name=${encodeURIComponent(urlData.blob_name)}`
+            });
+
+            if (successResponse.ok) {
+                alert('File uploaded successfully');
+                window.location.href = '/success/';
+            } else {
+                alert('Upload failed');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                uploadVideo();
+            });
+        });
+    </script>
+</head>
+<body>
+    <h2>Upload Video</h2>
+    <form>
+        {% csrf_token %}
+        <input type="file" accept="video/*" required>
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html>

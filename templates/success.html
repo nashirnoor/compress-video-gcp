@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Success</title>
+</head>
+<body>
+    <h2>Video Upload Successful</h2>
+    {% if video %}
+        <p>Your video has been uploaded successfully.</p>
+        <p>Video URL: <a href="{{ video.video_url }}" target="_blank">{{ video.video_url }}</a></p>
+    {% else %}
+        <p>No video found.</p>
+    {% endif %}
+</body>
+</html>
